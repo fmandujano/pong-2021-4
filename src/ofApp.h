@@ -20,5 +20,11 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+
+		ofVec2f *posPelota;
+		ofVec2f *posPlayer1; //raqueta o paleta del jugador 1
+
+		//input del jugador 1
+		bool w, s;
 		
 };

@@ -7,7 +7,35 @@ void ofApp::setup()
 	//ofSetFrameRate(15);
 	//inicializar la pos del Player 1
 	posPlayer1 = new ofVec2f(30, 100);
+	//condiciones iniciales
 	posPelota = new ofVec2f(ofGetWidth() / 2, ofGetHeight() / 2);
+	velPelota = new ofVec2f(150, 150);
+
+	if (appState == EAppState::server)
+	{
+		setupServer();
+	}
+	else if (appState == EAppState::client)
+	{
+		setupClient();
+	}
+
+}
+
+void ofApp::setupServer()
+{
+	puts("Creando servidor");
+	udpManager.Create();
+	udpManager.Bind(PORT);
+	udpManager.SetNonBlocking(true);
+}
+
+void ofApp::setupClient()
+{
+	puts("Creando cliente");
+	udpManager.Create();
+	string ip = ofSystemTextBoxDialog("IP del servidor", "127.0.0.1");
+	udpManager.Connect( ip.c_str(), PORT);
 }
 
 //--------------------------------------------------------------
@@ -21,6 +49,32 @@ void ofApp::update()
 	if (s)
 	{
 		posPlayer1->y += 200 * ofGetLastFrameTime();
+	}
+
+	//calculo del movimiento de la pelota
+	posPelota->x += velPelota->x * ofGetLastFrameTime();
+	posPelota->y += velPelota->y * ofGetLastFrameTime();
+
+	//rebote de la pelota en las paredes
+	if (posPelota->x < 0)
+	{
+		velPelota->x *= -1;
+		posPelota->x = 0;
+	}
+	if (posPelota->x > ofGetWidth())
+	{
+		velPelota->x *= -1;
+		posPelota->x = ofGetWidth();
+	}
+	if (posPelota->y < 0)
+	{
+		velPelota->y *= -1;
+		posPelota->y = 0;
+	}
+	if (posPelota->y > ofGetHeight())
+	{
+		velPelota->y *= -1;
+		posPelota->y = ofGetHeight();
 	}
 }
 
@@ -37,7 +91,6 @@ void ofApp::draw()
 	ofSetColor(ofColor::white);
 
 	ofRect(posPlayer1->x, posPlayer1->y, 10, 70);
-
 }
 
 //--------------------------------------------------------------

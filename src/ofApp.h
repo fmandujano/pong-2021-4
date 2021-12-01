@@ -15,6 +15,8 @@ class ofApp : public ofBaseApp
 		void setupServer();
 
 		void update();
+		void updateServer();
+		void updateClient();
 		void draw();
 
 		void keyPressed(int key);
@@ -32,8 +34,10 @@ class ofApp : public ofBaseApp
 		ofVec2f *posPelota;
 		ofVec2f *velPelota;
 		ofVec2f *posPlayer1; //raqueta o paleta del jugador 1
+		ofVec2f *posPlayer2; //raqueta o paleta del jugador 2
+		ofVec2f *playerSize; //ancho y alto de las paletas
 
-		//input del jugador 1
+		//input del jugador
 		bool w, s;
 
 		//cosas de red
@@ -44,4 +48,7 @@ class ofApp : public ofBaseApp
 			client, server, menu
 		};
 		EAppState appState;
+
+		//direccion local
+		std::string serverIP;
 };

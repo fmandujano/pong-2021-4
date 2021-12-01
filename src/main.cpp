@@ -7,8 +7,6 @@
 //========================================================================
 int main( int argc , char** argv )
 {
-	
-	
 	ofSetupOpenGL(640,480,OF_WINDOW);			// <-------- setup the GL context
 
 	// this kicks off the running of my app
@@ -16,7 +14,7 @@ int main( int argc , char** argv )
 	// pass in width and height too:
 	ofApp *myapp = new ofApp();
 	
-	myapp->appState = ofApp::EAppState::server;
+	myapp->appState = ofApp::EAppState::client;
 	//leer parametros
 	for (int i = 0; i < argc; i++)
 	{

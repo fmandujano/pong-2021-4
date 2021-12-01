@@ -5,8 +5,12 @@ void ofApp::setup()
 {
 	//cambiar la tasa de refreso, por default es 60;
 	//ofSetFrameRate(15);
+
+	playerSize = new ofVec2f(10, 70);
 	//inicializar la pos del Player 1
 	posPlayer1 = new ofVec2f(30, 100);
+	//inicializar la pos del Player 2
+	posPlayer2 = new ofVec2f( ofGetWidth()-30-playerSize->x , 100);
 	//condiciones iniciales
 	posPelota = new ofVec2f(ofGetWidth() / 2, ofGetHeight() / 2);
 	velPelota = new ofVec2f(150, 150);
@@ -28,20 +32,42 @@ void ofApp::setupServer()
 	udpManager.Create();
 	udpManager.Bind(PORT);
 	udpManager.SetNonBlocking(true);
+
+	//imprimir el rango de escucha
+	int port;
+	udpManager.GetListenAddr(serverIP, port);
+	printf("ip local : %s ", serverIP.c_str());
 }
 
 void ofApp::setupClient()
 {
 	puts("Creando cliente");
 	udpManager.Create();
-	string ip = ofSystemTextBoxDialog("IP del servidor", "127.0.0.1");
-	udpManager.Connect( ip.c_str(), PORT);
+	//string ip = ofSystemTextBoxDialog("IP del servidor", "127.0.0.1");
+	//udpManager.Connect( ip.c_str(), PORT);
+	udpManager.Connect("127.0.0.1", PORT);
+	udpManager.SetNonBlocking(true);
 }
 
 //--------------------------------------------------------------
 void ofApp::update()
 {
-	//calculo de input del Player 1
+	if (appState == EAppState::server)
+	{
+		updateServer();
+	}
+	else if (appState == EAppState::client)
+	{
+		updateClient();
+	}
+	else
+	{
+	}
+}
+
+void ofApp::updateServer()
+{
+	//calculo de input del Player 1 - Servidor - a la izquierda
 	if (w)
 	{
 		posPlayer1->y -= 200 * ofGetLastFrameTime();
@@ -76,12 +102,75 @@ void ofApp::update()
 		velPelota->y *= -1;
 		posPelota->y = ofGetHeight();
 	}
+
+	//enviar y recibir info por el socket
+	memset(buffer, 0, BUFFER_SIZE);
+	//serializar datos a enviar: posPaleta y posPlayer1
+	sprintf(buffer, "%f,%f,%f", posPelota->x, posPelota->y, posPlayer1->y);
+	//printf(buffer);
+	udpManager.SendAll(buffer, BUFFER_SIZE);
+
+	//recibir datos del cliente
+	memset(buffer, 0, BUFFER_SIZE);
+	if (udpManager.Receive(buffer, BUFFER_SIZE) > 0)
+	{
+		printf(buffer);
+	}
 }
+
+void ofApp::updateClient()
+{
+	//calculo de input del Player 2 - cliente - a la derecha
+	if (w)
+	{
+		posPlayer2->y -= 200 * ofGetLastFrameTime();
+	}
+	if (s)
+	{
+		posPlayer2->y += 200 * ofGetLastFrameTime();
+	}
+
+	//enviar datos
+	memset(buffer, 0, BUFFER_SIZE);
+	sprintf(buffer, "%f,%f\n", posPlayer1->x , posPlayer2->y);
+	udpManager.Send(buffer, BUFFER_SIZE);
+
+	//recibir datos
+	memset(buffer, 0, BUFFER_SIZE);
+	if (udpManager.Receive(buffer, BUFFER_SIZE) > 0)
+	{
+		//deserializacion: posPelotax,posPelotaY,PosPlayer1Y
+		char* val;
+		val = strtok(buffer, ",");
+		//el primer valor es la posPelotaX
+		posPelota->x = atof(val);
+		val = strtok(NULL, ",");
+		//el segundo valor es posPelotaY
+		posPelota->y = atof(val);
+		val = strtok(NULL, ",");
+		posPlayer1->y = atof(val);
+	}
+	
+}
+
 
 //--------------------------------------------------------------
 void ofApp::draw()
 {
 	ofSetBackgroundColor(0, 0, 0);
+
+	if (appState == EAppState::server)
+	{
+		ofDrawBitmapString("PONG SERVER", 20, 20);
+	}
+	else if (appState == EAppState::client)
+	{
+		ofDrawBitmapString("PONG CLIENT", 20, 20);
+	}
+	else
+	{
+
+	}
 
 	//dibujar pelota
 	ofSetColor(ofColor::cornflowerBlue); 
@@ -89,8 +178,9 @@ void ofApp::draw()
 
 	//dibujar jugador 1
 	ofSetColor(ofColor::white);
-
-	ofRect(posPlayer1->x, posPlayer1->y, 10, 70);
+	ofRect(posPlayer1->x, posPlayer1->y, playerSize->x, playerSize->y);
+	//dibujar jugador 2
+	ofRect(posPlayer2->x, posPlayer2->y, playerSize->x, playerSize->y);
 }
 
 //--------------------------------------------------------------

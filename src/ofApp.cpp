@@ -37,6 +37,14 @@ void ofApp::setupServer()
 	int port;
 	udpManager.GetListenAddr(serverIP, port);
 	printf("ip local : %s ", serverIP.c_str());
+
+	//EJEMPLO DE API WEB, QUITAR LUEGO
+	string uid = ofSystemTextBoxDialog("id del usuario", "11111");
+	string score = ofSystemTextBoxDialog("score a agregar", "0");
+	string url = "http://monsterballgo.com/pong/score.php?u=" + uid + "&s=" + score;
+	//enviar peticion web
+	ofHttpResponse res = ofLoadURL(url);
+	std::cout << res.data << std::endl;
 }
 
 void ofApp::setupClient()

@@ -9,6 +9,7 @@ int main( int argc , char** argv )
 {
 	int resx = 1000;
 	int resy = 1000;
+	bool fullscreen = false;
 
 	//analizar (parse) el archivo config.ini
 	ifstream configfile;
@@ -24,6 +25,9 @@ int main( int argc , char** argv )
 		puts("leyendo datos del archivo config.ini");
 		char * linea = new char[100];
 		char *llave, *valor;
+
+		
+
 		while (!configfile.eof())
 		{
 			configfile.getline(linea, 100);
@@ -41,8 +45,8 @@ int main( int argc , char** argv )
 					resx = atoi(valor);
 				if (!strcmp(llave, "resy"))
 					resy = atoi(valor);
-				//if (!strcmp(llave, "fullscreen"))
-					//fullscreen = atoi(valor) == 0 ? false : true;
+				if (!strcmp(llave, "fullscreen"))
+					fullscreen = !strcmp(valor, "true");
 				//if (!strcmp(llave, "port"))
 					//port = atoi(valor);
 			}
@@ -71,13 +75,16 @@ int main( int argc , char** argv )
 		{
 			resy = atoi(argv[i + 1]);
 		}
-
+		else if (!strcmp(argv[i], "fullscreen"))
+		{
+			fullscreen = true;
+		}
 	}
 
 
-
-
-	ofSetupOpenGL(resx, resy, OF_WINDOW);			// <-------- setup the GL context
+	//usamos el operador ternario para determinar si es pantalla completa
+	//  condicion ? valor_si_true : valor_si_false;
+	ofSetupOpenGL(resx, resy, fullscreen ? OF_FULLSCREEN:OF_WINDOW  );			// <-------- setup the GL context
 
 
 	ofRunApp(myapp);
